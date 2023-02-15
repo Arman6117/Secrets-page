@@ -40,7 +40,8 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
   googleId: String,
-  githubId: String
+  githubId: String,
+  secret: String
 });
 
 userSchema.plugin(passportLocalMongoose); // step 7
@@ -127,12 +128,43 @@ app.get("/register", function (req, res) {
   res.render("register");
 });
 app.get("/secrets", function(req,res){
+   User.find({"secret" : {$ne:null}}, function(err,results){
+     if (err) {
+        console.log(err);
+     }
+     else {
+        if (results) {
+            res.render("secrets", {usersWithSecrets: results})
+        }
+     }
+   })
+})
+
+app.get("/submit", function(req,res){
     if (req.isAuthenticated){
-        res.render("secrets")
+        res.render("submit")
     }
     else {
         res.redirect("/login")
     }
+})
+
+app.post("/submit",function(req,res){
+    const userSecret = req.body.secret
+    const userID = 
+    
+    User.findById(req.user.id, function(err,results){
+        if (err) {
+            console.log(err);
+        } else {
+            if (results){
+                results.secret = userSecret
+                results.save(function(){
+                    res.redirect("/secrets")
+                })
+            }
+        }
+    })
 })
 
 app.get("/logout",function(req,res){
@@ -221,3 +253,5 @@ app.listen(3000, function () {
     //     }
     //   )
 //   });
+
+
